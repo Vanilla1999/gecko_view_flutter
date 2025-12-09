@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
-  void showInfoToast(BuildContext context, String message)  {
+  void showInfoToast(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
     ));
@@ -56,9 +56,11 @@ class _MyAppState extends State<MyApp> {
           tab = await this.controller?.createTab();
           tab?.activate();
           tab?.initGeckoChannel();
-          tab?.addJavaScriptHandler(handlerName: 'getBrowserInfo', callback: (value){
-          return '{\"deviceModel\":\"googlesdk_gphone64_x86_64\",\"browserVersion\":\"2.24.26\",\"scanAPI\":\"1\",\"printAPI\":\"1\",\"keyboardAPI\":\"2\"}';
-          });
+          tab?.addJavaScriptHandler(
+              handlerName: 'getBrowserInfo',
+              callback: (value) {
+                return '{\"deviceModel\":\"googlesdk_gphone64_x86_64\",\"browserVersion\":\"2.24.26\",\"scanAPI\":\"1\",\"printAPI\":\"1\",\"keyboardAPI\":\"2\"}';
+              });
           await tab?.openURI(Uri.parse('http://10.8.32.64:8085?termnum=1'));
         },
       ),
@@ -73,7 +75,16 @@ class _MyAppState extends State<MyApp> {
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: () {
-              tab?.reload();
+              tab?.javascriptController().runAsync('''
+   setTimeout(function(){
+        window.dispatchEvent(
+            new CustomEvent(
+                "tsdScanEvent",
+                {"detail": '{"barcode":"123"}'}
+            )
+        )
+    },0);
+      ''');
             },
           ),
           IconButton(
@@ -109,28 +120,24 @@ class _MyAppState extends State<MyApp> {
                   final fullUrl = await tab?.currentUrl();
                   if (fullUrl != null) {
                     final baseURL = extractBaseURLString(fullUrl);
-                    final cookies = await cookieManager.getAllCookies(url: baseURL);
+                    final cookies =
+                        await cookieManager.getAllCookies(url: baseURL);
                     await showDialog(
                       context: context,
                       builder: (BuildContext context) =>
-                          SimpleDialog(
-                              title: const Text("Cookies"),
-                              children: [
-                                SingleChildScrollView(
-                                  child: ListBody(
-                                    children: cookies.map((cookie) =>
-                                        ListTile(
-                                            title: Text(cookie.name)
-                                        )
-                                    ).toList(),
-                                  ),
-                                )
-                              ]
+                          SimpleDialog(title: const Text("Cookies"), children: [
+                        SingleChildScrollView(
+                          child: ListBody(
+                            children: cookies
+                                .map((cookie) =>
+                                    ListTile(title: Text(cookie.name)))
+                                .toList(),
                           ),
+                        )
+                      ]),
                     );
                   }
-                }
-            ),
+                }),
             ListTile(
               title: const Text("Get cookie test"),
               onTap: () async {
@@ -142,20 +149,16 @@ class _MyAppState extends State<MyApp> {
                         name: TEST_COOKIE, url: baseURL);
                     await showDialog(
                       context: context,
-                      builder: (BuildContext context) => SimpleDialog(
-                          title: const Text("Cookies"),
-                          children: [
-                            SingleChildScrollView(
-                              child: ListBody(
-                                  children: [
-                                    ListTile(
-                                      title: Text("${cookie.name}:${cookie.value}"),
-                                    )
-                                  ]
-                              ),
+                      builder: (BuildContext context) =>
+                          SimpleDialog(title: const Text("Cookies"), children: [
+                        SingleChildScrollView(
+                          child: ListBody(children: [
+                            ListTile(
+                              title: Text("${cookie.name}:${cookie.value}"),
                             )
-                          ]
-                      ),
+                          ]),
+                        )
+                      ]),
                     );
                   } on CookieException catch (e) {
                     showOperationFailedToast(context, e.message);
@@ -185,7 +188,8 @@ class _MyAppState extends State<MyApp> {
                 if (fullUrl != null) {
                   final baseURL = extractBaseURLString(fullUrl);
                   try {
-                    await cookieManager.removeCookie(name: TEST_COOKIE, url: baseURL);
+                    await cookieManager.removeCookie(
+                        name: TEST_COOKIE, url: baseURL);
                   } on CookieException catch (e) {
                     showOperationFailedToast(context, e.message);
                   }
@@ -193,22 +197,21 @@ class _MyAppState extends State<MyApp> {
               },
             ),
             ListTile(
-              title: const Text("Find"),
-              onTap: () async {
-                final activeTab = await controller?.getActiveTab();
-                final findController = activeTab?.findController();
-                final result = await findController?.find(const GeckoFindRequest(
-                  searchString: "isolate",
-                  drawLinkOutline: true,
-                  highlightAll: true
-                ));
-                showInfoToast(context,
-                    "Found ${result?.total} occurrences."
-                    " Moving to ${result?.occurrenceOffset}."
-                    " Wrapped: ${result?.wrapped}"
-                );
-              }
-            ),
+                title: const Text("Find"),
+                onTap: () async {
+                  final activeTab = await controller?.getActiveTab();
+                  final findController = activeTab?.findController();
+                  final result = await findController?.find(
+                      const GeckoFindRequest(
+                          searchString: "isolate",
+                          drawLinkOutline: true,
+                          highlightAll: true));
+                  showInfoToast(
+                      context,
+                      "Found ${result?.total} occurrences."
+                      " Moving to ${result?.occurrenceOffset}."
+                      " Wrapped: ${result?.wrapped}");
+                }),
             ListTile(
               title: const Text("Clear find"),
               onTap: () async {
