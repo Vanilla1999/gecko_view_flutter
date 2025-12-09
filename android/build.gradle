@@ -2,7 +2,7 @@ group 'info.xert.geckoviewflutter'
 version '1.0-SNAPSHOT'
 
 ext {
-    geckoviewVersion = "141.0.20250728130431"
+    geckoviewVersion = "135.0.20250216192613"
 }
 
 buildscript {

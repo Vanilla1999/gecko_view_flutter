@@ -37,7 +37,7 @@ abstract class Extension {
         }
     }
 
-    protected var port: WebExtension.Port? = null;
+    var port: WebExtension.Port? = null;
     var extension: WebExtension? = null
         private set
     fun enable(runtime: GeckoRuntime, assets: FlutterPlugin.FlutterAssets, callback: ResultConsumer<Unit>) {

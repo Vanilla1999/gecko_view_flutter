@@ -7,10 +7,14 @@ import info.xert.gecko_view_flutter.webextension.CookieManagerExtension
 import info.xert.gecko_view_flutter.webextension.HostJSExecutionExtension
 import info.xert.gecko_view_flutter.webextension.TabDataInitializerExtension
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterAssets
+import org.mozilla.geckoview.GeckoRuntimeSettings
 
 class GeckoRuntimeController(context: Context, private val assets: FlutterAssets) {
-
-    private val runtime: GeckoRuntime = GeckoRuntime.getDefault(context)
+    val runtimeSettings = GeckoRuntimeSettings.Builder()
+        .remoteDebuggingEnabled(true)   // включаем удалённую отладку
+        .debugLogging(true)             // детальные логи GeckoView (опционально)
+        .build()
+    private val runtime: GeckoRuntime = GeckoRuntime.create(context,runtimeSettings)
 
     val tabDataInitializer = TabDataInitializerExtension()
     val hostJsExecutor = HostJSExecutionExtension()

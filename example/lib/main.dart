@@ -55,7 +55,11 @@ class _MyAppState extends State<MyApp> {
           this.controller = controller;
           tab = await this.controller?.createTab();
           tab?.activate();
-          await tab?.openURI(Uri.parse('https://dart.dev/'));
+          tab?.initGeckoChannel();
+          tab?.addJavaScriptHandler(handlerName: 'getBrowserInfo', callback: (value){
+          return '{\"deviceModel\":\"googlesdk_gphone64_x86_64\",\"browserVersion\":\"2.24.26\",\"scanAPI\":\"1\",\"printAPI\":\"1\",\"keyboardAPI\":\"2\"}';
+          });
+          await tab?.openURI(Uri.parse('http://10.8.32.64:8085?termnum=1'));
         },
       ),
       bottomNavigationBar: BottomAppBar(

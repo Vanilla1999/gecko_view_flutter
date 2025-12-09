@@ -1,3 +1,5 @@
+import 'package:gecko_view_flutter/src/host/GeckoJSBridge.dart';
+
 import 'common/find_request.dart';
 import 'common/find_response.dart';
 import 'common/position.dart';
@@ -194,6 +196,26 @@ class GeckoTabController {
 
   Future<void> scrollTo(GeckoPosition position, bool smooth) async {
     await MethodChannelProxy.instance.scrollTo(_viewId, _tabId, position, smooth);
+  }
+  final _jsBridge = GeckoJsBridge();
+  void initGeckoChannel() {
+    MethodChannelProxy.openViewChannel(_viewId).setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'jsCallHandler':
+          final name = call.arguments['name'] as String;
+          final args = (call.arguments['args'] as List?) ?? const [];
+          final result = await _jsBridge.handleJsCall(name, args);
+          return result;
+      }
+    });
+  }
+
+// API для пользователя
+  void addJavaScriptHandler({
+    required String handlerName,
+    required JsHandler callback,
+  }) {
+    _jsBridge.addJavaScriptHandler(handlerName: handlerName, callback: callback);
   }
 }
 

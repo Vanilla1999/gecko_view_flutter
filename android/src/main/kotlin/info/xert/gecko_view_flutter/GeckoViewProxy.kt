@@ -249,4 +249,32 @@ class GeckoViewProxy(
     override fun onAlertPrompt(request: AlertPromptRequest, callback: ResultConsumer<Any?>) {
         handlePrompt(request, callback, "alertPrompt")
     }
+    fun invokeJsHandler(
+        tabId: Int,
+        handlerName: String,
+        args: List<Any?>,
+        callback: (Boolean, Any?, String?, String?) -> Unit
+    ) {
+        channel.invokeMethod(
+            "jsCallHandler",
+            mapOf(
+                "tabId" to tabId,
+                "name" to handlerName,
+                "args" to args,
+            ),
+            object : MethodChannel.Result {
+                override fun success(result: Any?) {
+                    callback(true, result, null, null)
+                }
+
+                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                    callback(false, null, errorCode, errorMessage)
+                }
+
+                override fun notImplemented() {
+                    callback(false, null, "NOT_IMPLEMENTED", "jsCallHandler not implemented")
+                }
+            }
+        )
+    }
 }
