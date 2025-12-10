@@ -95,16 +95,27 @@ class _MyAppState extends State<MyApp> {
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: () {
-              tab?.javascriptController().runAsync('''
-   setTimeout(function(){
-        window.dispatchEvent(
-            new CustomEvent(
-                "tsdScanEvent",
-                {"detail": {"barcode":"123"}}
-            )
-        )
-    },0);
-      ''');
+              tab?.javascriptController().runAsync(r'''
+  (function () {
+    try {
+      var payload = { barcode: "123" };
+      // можно клонировать, но не обязательно
+      payload = JSON.parse(JSON.stringify(payload));
+
+      window.postMessage(
+        {
+          __from: "bridge-native",
+          payload: payload
+        },
+        "*"
+      );
+      console.log("native: bridge-native message posted", payload);
+    } catch (e) {
+      console.error("native: failed to post bridge-native message", e);
+    }
+  })();
+''');
+
             },
           ),
           IconButton(
