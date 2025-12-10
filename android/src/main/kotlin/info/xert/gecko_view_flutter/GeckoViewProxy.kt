@@ -277,4 +277,91 @@ class GeckoViewProxy(
             }
         )
     }
+    fun onLoadStart(tabId: Int, url: String) {
+        val args = mapOf(
+            "tabId" to tabId,
+            "url" to url
+        )
+        channel.invokeMethod("onLoadStart", args)
+    }
+
+    fun onLoadStop(tabId: Int, success: Boolean) {
+        val args = mapOf(
+            "tabId" to tabId,
+            "success" to success
+        )
+        channel.invokeMethod("onLoadStop", args)
+    }
+
+    fun onReceivedError(
+        tabId: Int,
+        url: String?,
+        category: Int,
+        code: Int,
+        message: String?
+    ) {
+        val args = mapOf(
+            "tabId" to tabId,
+            "url" to url,
+            "category" to category,
+            "code" to code,
+            "message" to message
+        )
+        channel.invokeMethod("onReceivedError", args)
+    }
+
+    fun shouldOverrideUrlLoading(
+        tabId: Int,
+        url: String,
+    ): Boolean {
+        val args = mapOf(
+            "tabId" to tabId,
+            "url" to url,
+        )
+
+        var resultValue: Boolean = false
+        val latch = java.util.concurrent.CountDownLatch(1)
+
+        channel.invokeMethod(
+            "shouldOverrideUrlLoading",
+            args,
+            object : MethodChannel.Result {
+                override fun success(result: Any?) {
+                    resultValue = (result as? Boolean) ?: false
+                    latch.countDown()
+                }
+
+                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                    // в случае ошибки не переопределяем загрузку
+                    resultValue = false
+                    latch.countDown()
+                }
+
+                override fun notImplemented() {
+                    resultValue = false
+                    latch.countDown()
+                }
+            }
+        )
+
+        latch.await()
+        return resultValue
+    }
+
+    fun onLocationChange(tabId: Int, url: String?, hasUserGesture: Boolean) {
+        val args = mapOf(
+            "tabId" to tabId,
+            "url" to url,
+            "hasUserGesture" to hasUserGesture
+        )
+        channel.invokeMethod("onLocationChange", args)
+    }
+
+    fun onProgressChanged(tabId: Int, progress: Int) {
+        val args = mapOf(
+            "tabId" to tabId,
+            "progress" to progress
+        )
+        channel.invokeMethod("onProgressChanged", args)
+    }
 }

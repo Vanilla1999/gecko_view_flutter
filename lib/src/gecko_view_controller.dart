@@ -20,7 +20,7 @@ typedef GeckoViewCreatedCallback = void Function(
 class GeckoView extends StatefulWidget {
   const GeckoView({
     super.key,
-    required this.onGeckoViewCreated
+    required this.onGeckoViewCreated,
   });
 
   final GeckoViewCreatedCallback onGeckoViewCreated;
@@ -56,29 +56,30 @@ class _GeckoViewState extends State<GeckoView>
     const Map<String, dynamic> creationParams = <String, dynamic>{};
 
     return PlatformViewLink(
-        surfaceFactory: (context, controller) {
-          return AndroidViewSurface(
-              controller: controller as AndroidViewController,
-              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-              hitTestBehavior: PlatformViewHitTestBehavior.opaque
-          );
-        },
-        onCreatePlatformView: (params) {
-          return PlatformViewsService.initSurfaceAndroidView(
-              id: params.id,
-              viewType: params.viewType,
-              layoutDirection: TextDirection.ltr,
-              creationParams: creationParams,
-              creationParamsCodec: const StandardMessageCodec(),
-              onFocus: () {
-                params.onFocusChanged(true);
-              }
-          )
-            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-            ..addOnPlatformViewCreatedListener(_onPlatformViewCreated)
-            ..create();
-        },
-        viewType: viewType
+      surfaceFactory: (context, controller) {
+        return AndroidViewSurface(
+          controller: controller as AndroidViewController,
+          gestureRecognizers:
+          const <Factory<OneSequenceGestureRecognizer>>{},
+          hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+        );
+      },
+      onCreatePlatformView: (params) {
+        return PlatformViewsService.initSurfaceAndroidView(
+          id: params.id,
+          viewType: params.viewType,
+          layoutDirection: TextDirection.ltr,
+          creationParams: creationParams,
+          creationParamsCodec: const StandardMessageCodec(),
+          onFocus: () {
+            params.onFocusChanged(true);
+          },
+        )
+          ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+          ..addOnPlatformViewCreatedListener(_onPlatformViewCreated)
+          ..create();
+      },
+      viewType: viewType,
     );
   }
 }
@@ -89,7 +90,7 @@ class GeckoJavascriptController {
 
   GeckoJavascriptController._(
       this._viewId,
-      this._tabId
+      this._tabId,
       );
 
   Future<void> runAsync(String script) async {
@@ -103,11 +104,12 @@ class GeckoFindController {
 
   GeckoFindController._(
       this._viewId,
-      this._tabId
-  );
+      this._tabId,
+      );
 
   Future<GeckoFindResult> find(GeckoFindRequest request) async {
-    return await MethodChannelProxy.instance.findNext(_viewId, _tabId, request);
+    return await MethodChannelProxy.instance
+        .findNext(_viewId, _tabId, request);
   }
 
   Future<void> clear() async {
@@ -122,28 +124,34 @@ class GeckoTabController {
   late final GeckoJavascriptController _javascriptController;
   late final GeckoFindController _findController;
 
+  // Колбэки событий
+  void Function(String url)? onLoadStart;
+  void Function(bool success)? onLoadStop;
+  void Function(String? url, int code, String? message)? onReceivedError;
+  void Function(int progress)? onProgressChanged;
+  bool Function(String url)? shouldOverrideUrlLoading;
+
+  // JS bridge
+  final GeckoJsBridge _jsBridge = GeckoJsBridge();
+
   GeckoTabController._(
       this._viewId,
-      this._tabId
+      this._tabId,
       ) {
     _javascriptController = GeckoJavascriptController._(_viewId, _tabId);
     _findController = GeckoFindController._(_viewId, _tabId);
   }
 
-  int id() {
-    return _tabId;
-  }
+  int id() => _tabId;
 
-  GeckoJavascriptController javascriptController() {
-    return _javascriptController;
-  }
+  GeckoJavascriptController javascriptController() =>
+      _javascriptController;
 
-  GeckoFindController findController() {
-    return _findController;
-  }
+  GeckoFindController findController() => _findController;
 
   Future<bool> isActive() async {
-    return await MethodChannelProxy.instance.isTabActive(_viewId, _tabId);
+    return await MethodChannelProxy.instance
+        .isTabActive(_viewId, _tabId);
   }
 
   Future<void> activate() async {
@@ -151,15 +159,18 @@ class GeckoTabController {
   }
 
   Future<String?> currentUrl() async {
-    return await MethodChannelProxy.instance.getCurrentUrl(_viewId, _tabId);
+    return await MethodChannelProxy.instance
+        .getCurrentUrl(_viewId, _tabId);
   }
 
   Future<String?> getTitle() async {
-    return await MethodChannelProxy.instance.getTitle(_viewId, _tabId);
+    return await MethodChannelProxy.instance
+        .getTitle(_viewId, _tabId);
   }
 
   Future<String?> getUserAgent() async {
-    return await MethodChannelProxy.instance.getUserAgent(_viewId, _tabId);
+    return await MethodChannelProxy.instance
+        .getUserAgent(_viewId, _tabId);
   }
 
   Future<void> openURI(Uri uri) async {
@@ -179,7 +190,8 @@ class GeckoTabController {
   }
 
   Future<GeckoOffset> getScrollOffset() async {
-    return await MethodChannelProxy.instance.getScrollOffset(_viewId, _tabId);
+    return await MethodChannelProxy.instance
+        .getScrollOffset(_viewId, _tabId);
   }
 
   Future<void> scrollToBottom() async {
@@ -191,37 +203,34 @@ class GeckoTabController {
   }
 
   Future<void> scrollBy(GeckoOffset offset, bool smooth) async {
-    await MethodChannelProxy.instance.scrollBy(_viewId, _tabId, offset, smooth);
+    await MethodChannelProxy.instance
+        .scrollBy(_viewId, _tabId, offset, smooth);
   }
 
   Future<void> scrollTo(GeckoPosition position, bool smooth) async {
-    await MethodChannelProxy.instance.scrollTo(_viewId, _tabId, position, smooth);
-  }
-  final _jsBridge = GeckoJsBridge();
-  void initGeckoChannel() {
-    MethodChannelProxy.openViewChannel(_viewId).setMethodCallHandler((call) async {
-      switch (call.method) {
-        case 'jsCallHandler':
-          final name = call.arguments['name'] as String;
-          final args = (call.arguments['args'] as List?) ?? const [];
-          final result = await _jsBridge.handleJsCall(name, args);
-          return result;
-      }
-    });
+    await MethodChannelProxy.instance
+        .scrollTo(_viewId, _tabId, position, smooth);
   }
 
-// API для пользователя
+  // API для пользователя: JS handler
   void addJavaScriptHandler({
     required String handlerName,
     required JsHandler callback,
   }) {
-    _jsBridge.addJavaScriptHandler(handlerName: handlerName, callback: callback);
+    _jsBridge.addJavaScriptHandler(
+      handlerName: handlerName,
+      callback: callback,
+    );
+  }
+
+  // Вызов из контроллера для jsCallHandler
+  Future<dynamic> handleJsCall(String name, List<dynamic> args) {
+    return _jsBridge.handleJsCall(name, args);
   }
 }
 
 class GeckoViewController {
   final BuildContext _context;
-
   final int _id;
 
   int _nextTabId = 0;
@@ -233,10 +242,11 @@ class GeckoViewController {
 
   GeckoViewController._(
       this._context,
-      this._id
-  ) {
+      this._id,
+      ) {
     init();
     _promptHandler = initPromptHandler();
+    _initViewChannel();
   }
 
   Future<void> init() async {
@@ -244,11 +254,100 @@ class GeckoViewController {
   }
 
   PromptHandler initPromptHandler() {
-    final handler = MethodChannelProxy.instance.registerPromptHandler(_id);
+    final handler =
+    MethodChannelProxy.instance.registerPromptHandler(_id);
     handler.onChoicePrompt = onChoicePrompt;
     handler.onAlertPrompt = onAlertPrompt;
-
     return handler;
+  }
+
+  void _initViewChannel() {
+    final channel = MethodChannelProxy.openViewChannel(_id);
+    channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'jsCallHandler':
+          {
+            // Если с native прилетит tabId, лучше его использовать
+            final String name = call.arguments['name'] as String;
+            final List<dynamic> args =
+                (call.arguments['args'] as List?) ?? const [];
+            // Пока jsCallHandler без tabId — берём первый активный таб
+            final tab =
+            _tabs.isNotEmpty ? _tabs.first : null;
+            if (tab == null) return null;
+            return await tab.handleJsCall(name, args);
+          }
+
+        case 'onLoadStart':
+          {
+            final int tabId = call.arguments['tabId'] as int;
+            final String url = call.arguments['url'] as String;
+            final tab = _tabs
+                .where((t) => t.id() == tabId)
+                .cast<GeckoTabController?>()
+                .firstWhere((t) => t != null, orElse: () => null);
+            tab?.onLoadStart?.call(url);
+            break;
+          }
+
+        case 'onLoadStop':
+          {
+            final int tabId = call.arguments['tabId'] as int;
+            final bool success =
+            call.arguments['success'] as bool;
+            final tab = _tabs
+                .where((t) => t.id() == tabId)
+                .cast<GeckoTabController?>()
+                .firstWhere((t) => t != null, orElse: () => null);
+            tab?.onLoadStop?.call(success);
+            break;
+          }
+
+        case 'onReceivedError':
+          {
+            final int tabId = call.arguments['tabId'] as int;
+            final String? url =
+            call.arguments['url'] as String?;
+            final int code = call.arguments['code'] as int;
+            final String? message =
+            call.arguments['message'] as String?;
+            final tab = _tabs
+                .where((t) => t.id() == tabId)
+                .cast<GeckoTabController?>()
+                .firstWhere((t) => t != null, orElse: () => null);
+            tab?.onReceivedError?.call(url, code, message);
+            break;
+          }
+
+        case 'onProgressChanged':
+          {
+            final int tabId = call.arguments['tabId'] as int;
+            final int progress =
+            call.arguments['progress'] as int;
+            final tab = _tabs
+                .where((t) => t.id() == tabId)
+                .cast<GeckoTabController?>()
+                .firstWhere((t) => t != null, orElse: () => null);
+            tab?.onProgressChanged?.call(progress);
+            break;
+          }
+
+        case 'shouldOverrideUrlLoading':
+          {
+            final int tabId = call.arguments['tabId'] as int;
+            final String url =
+            call.arguments['url'] as String;
+            final tab = _tabs
+                .where((t) => t.id() == tabId)
+                .cast<GeckoTabController?>()
+                .firstWhere((t) => t != null, orElse: () => null);
+            final handler = tab?.shouldOverrideUrlLoading;
+            if (handler == null) return true;
+            return handler(url);
+          }
+      }
+      return null;
+    });
   }
 
   Future<GeckoTabController> createTab() async {
@@ -267,19 +366,24 @@ class GeckoViewController {
   }
 
   Future<GeckoTabController?> getActiveTab() async {
-    final activeId = await MethodChannelProxy.instance.getActiveTab(_id);
+    final activeId =
+    await MethodChannelProxy.instance.getActiveTab(_id);
     if (activeId != null) {
-      return _tabs.firstWhere((tab) => tab.id() == activeId);
+      return _tabs
+          .firstWhere((tab) => tab.id() == activeId);
     }
-
     return null;
   }
 
-  Future<ChoicePromptResponse> onChoicePrompt(ChoicePromptRequest request) async {
-    return await promptDelegate.onChoicePrompt(_context, request);
+  Future<ChoicePromptResponse> onChoicePrompt(
+      ChoicePromptRequest request) async {
+    return await promptDelegate.onChoicePrompt(
+        _context, request);
   }
 
-  Future<void> onAlertPrompt(AlertPromptRequest request) async {
-    return await promptDelegate.onAlertPrompt(_context, request);
+  Future<void> onAlertPrompt(
+      AlertPromptRequest request) async {
+    return await promptDelegate.onAlertPrompt(
+        _context, request);
   }
 }

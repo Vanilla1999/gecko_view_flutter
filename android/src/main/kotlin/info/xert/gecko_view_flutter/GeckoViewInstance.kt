@@ -55,7 +55,20 @@ internal class GeckoViewInstance(
 
         session.promptDelegate = FlutterPromptDelegate(proxy)
         session.scrollDelegate = FlutterScrollDelegate()
-        session.navigationDelegate = FlutterNavigationDelegate()
+        session.navigationDelegate = FlutterNavigationDelegate(tabId, proxy)
+        session.progressDelegate = object : GeckoSession.ProgressDelegate {
+            override fun onPageStart(session: GeckoSession, url: String) {
+                proxy.onLoadStart(tabId, url)
+            }
+
+            override fun onPageStop(session: GeckoSession, success: Boolean) {
+                proxy.onLoadStop(tabId, success)
+            }
+
+            override fun onProgressChange(session: GeckoSession, progress: Int) {
+                proxy.onProgressChanged(tabId, progress)
+            }
+        }
 
         session.permissionDelegate = object : GeckoSession.PermissionDelegate {
             override fun onContentPermissionRequest(

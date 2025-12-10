@@ -55,7 +55,27 @@ class _MyAppState extends State<MyApp> {
           this.controller = controller;
           tab = await this.controller?.createTab();
           tab?.activate();
-          tab?.initGeckoChannel();
+          tab?.onLoadStart = (url) {
+            debugPrint('onLoadStart: $url');
+          };
+
+          tab?.onLoadStop = (success) {
+            debugPrint('onLoadStop: $success');
+          };
+
+          tab?.onReceivedError = (url, code, message) {
+            debugPrint('onReceivedError: $url $code $message');
+          };
+
+          tab?.onProgressChanged = (progress) {
+            debugPrint('progress: $progress');
+          };
+
+          tab?.shouldOverrideUrlLoading = (url) {
+            debugPrint('shouldOverrideUrlLoading: $url mainFrame=');
+            // true — не грузить, false — грузить
+            return true;
+          };
           tab?.addJavaScriptHandler(
               handlerName: 'getBrowserInfo',
               callback: (value) {
@@ -80,7 +100,7 @@ class _MyAppState extends State<MyApp> {
         window.dispatchEvent(
             new CustomEvent(
                 "tsdScanEvent",
-                {"detail": '{"barcode":"123"}'}
+                {"detail": {"barcode":"123"}}
             )
         )
     },0);
