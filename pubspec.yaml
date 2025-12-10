@@ -1,6 +1,6 @@
 name: gecko_view_flutter
 description: "Gecko view for flutter (Android only for now)"
-version: 0.0.1
+version: 0.0.2
 homepage:
 
 environment:
