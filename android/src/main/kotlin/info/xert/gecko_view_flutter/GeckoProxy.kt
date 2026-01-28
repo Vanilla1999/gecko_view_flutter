@@ -17,8 +17,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 class GeckoProxy(
-        messenger: BinaryMessenger,
-        private val runtimeController: GeckoRuntimeController)
+    messenger: BinaryMessenger,
+    private val runtimeController: GeckoRuntimeController)
     : MethodChannel.MethodCallHandler {
 
     private val TAG: String = GeckoProxy::class.java.name
@@ -52,9 +52,9 @@ class GeckoProxy(
                 "getCookie" -> {
                     if (!runtimeController.cookieManagerExtension.enabled) {
                         callResult.error(
-                                "Invalid state",
-                                "Cookie manager error not initialized",
-                                "Cookie manager extension need to be enabled to manage cookies"
+                            "Invalid state",
+                            "Cookie manager error not initialized",
+                            "Cookie manager extension need to be enabled to manage cookies"
                         )
                         return
                     }
@@ -66,26 +66,26 @@ class GeckoProxy(
                     val url = tryExtractSingleArgument<String>(call, "url")
 
                     runtimeController.cookieManagerExtension.getCookie(
-                            firstPartyDomain, name, partitionKey,
-                            storeId, url,
-                            object: ResultConsumer<Cookie> {
-                                override fun success(result: Cookie) {
-                                    callResult.success(result.toMap())
-                                }
-
-                                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                                    callResult.error(errorCode, errorMessage, errorDetails)
-                                }
+                        firstPartyDomain, name, partitionKey,
+                        storeId, url,
+                        object: ResultConsumer<Cookie> {
+                            override fun success(result: Cookie) {
+                                callResult.success(result.toMap())
                             }
+
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                callResult.error(errorCode, errorMessage, errorDetails)
+                            }
+                        }
                     )
                 }
 
                 "getAllCookies" -> {
                     if (!runtimeController.cookieManagerExtension.enabled) {
                         callResult.error(
-                                "Invalid state",
-                                "Cookie manager error not initialized",
-                                "Cookie manager extension need to be enabled to manage cookies"
+                            "Invalid state",
+                            "Cookie manager error not initialized",
+                            "Cookie manager extension need to be enabled to manage cookies"
                         )
                         return
                     }
@@ -98,26 +98,26 @@ class GeckoProxy(
                     val url = tryExtractSingleArgument<String>(call, "url")
 
                     runtimeController.cookieManagerExtension.getAllCookie(
-                            domain, firstPartyDomain, name, partitionKey,
-                            storeId, url,
-                            object: ResultConsumer<List<Cookie>> {
-                                override fun success(result: List<Cookie>) {
-                                    callResult.success(result.map { cookie -> cookie.toMap() }.toList())
-                                }
-
-                                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                                    callResult.error(errorCode, errorMessage, errorDetails)
-                                }
+                        domain, firstPartyDomain, name, partitionKey,
+                        storeId, url,
+                        object: ResultConsumer<List<Cookie>> {
+                            override fun success(result: List<Cookie>) {
+                                callResult.success(result.map { cookie -> cookie.toMap() }.toList())
                             }
+
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                callResult.error(errorCode, errorMessage, errorDetails)
+                            }
+                        }
                     )
                 }
 
                 "removeCookie" -> {
                     if (!runtimeController.cookieManagerExtension.enabled) {
                         callResult.error(
-                                "Invalid state",
-                                "Cookie manager error not initialized",
-                                "Cookie manager extension need to be enabled to manage cookies"
+                            "Invalid state",
+                            "Cookie manager error not initialized",
+                            "Cookie manager extension need to be enabled to manage cookies"
                         )
                         return
                     }
@@ -129,25 +129,25 @@ class GeckoProxy(
                     val url = tryExtractSingleArgument<String>(call, "url")
 
                     runtimeController.cookieManagerExtension.removeCookie(
-                            firstPartyDomain, name, partitionKey, storeId, url,
-                            object: ResultConsumer<Unit> {
-                                override fun success(result: Unit) {
-                                    callResult.success(true)
-                                }
-
-                                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                                    callResult.error(errorCode, errorMessage, errorDetails)
-                                }
+                        firstPartyDomain, name, partitionKey, storeId, url,
+                        object: ResultConsumer<Unit> {
+                            override fun success(result: Unit) {
+                                callResult.success(true)
                             }
+
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                callResult.error(errorCode, errorMessage, errorDetails)
+                            }
+                        }
                     )
                 }
 
                 "setCookie" -> {
                     if (!runtimeController.cookieManagerExtension.enabled) {
                         callResult.error(
-                                "Invalid state",
-                                "Cookie manager error not initialized",
-                                "Cookie manager extension need to be enabled to manage cookies"
+                            "Invalid state",
+                            "Cookie manager error not initialized",
+                            "Cookie manager extension need to be enabled to manage cookies"
                         )
                         return
                     }
@@ -169,17 +169,17 @@ class GeckoProxy(
                     val value = tryExtractOptionalSingleArgument<String>(call, "value")
 
                     runtimeController.cookieManagerExtension.setCookie(
-                            domain, expirationDate, firstPartyDomain, httpOnly, name, partitionKey,
-                            path, sameSite, secure, storeId, url, value,
-                            object: ResultConsumer<Unit> {
-                                override fun success(result: Unit) {
-                                    callResult.success(true)
-                                }
-
-                                override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-                                    callResult.error(errorCode, errorMessage, errorDetails)
-                                }
+                        domain, expirationDate, firstPartyDomain, httpOnly, name, partitionKey,
+                        path, sameSite, secure, storeId, url, value,
+                        object: ResultConsumer<Unit> {
+                            override fun success(result: Unit) {
+                                callResult.success(true)
                             }
+
+                            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                                callResult.error(errorCode, errorMessage, errorDetails)
+                            }
+                        }
                     )
                 }
 

@@ -267,9 +267,13 @@ internal class GeckoViewInstance(
     }
 
     fun runJsAsync(tabId: Int, script: String) {
-        val browserTabId = getInternalTabIdByTabId(tabId)
-            ?: throw InternalError("Invalid session state! TabId not initialized")
-        runtimeController.hostJsExecutor.runAsync(script, browserTabId)
+        try {
+            val browserTabId = getInternalTabIdByTabId(tabId)
+                ?: throw InternalError("Invalid session state! TabId not initialized")
+            runtimeController.hostJsExecutor.runAsync(script, browserTabId)
+        } catch (e: Throwable) {
+            Log.d("GECKO", e.toString())
+        }
     }
 
     fun findNext(tabId: Int, request: FindRequest, callback: ResultConsumer<FindResult>) {

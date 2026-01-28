@@ -46,7 +46,8 @@ class MethodChannelProxy {
     return MethodChannelPromptHandler(channel);
   }
 
-  static Future<T?> invokeMethodForPlugin<T>(String command, Map<String, Object?> args) async {
+  static Future<T?> invokeMethodForPlugin<T>(String command,
+      Map<String, Object?> args) async {
     try {
       var channel = openChannel();
       debugPrint("Calling $command for plugin");
@@ -58,7 +59,8 @@ class MethodChannelProxy {
     }
   }
 
-  static Future<T?> invokeMethodForTab<T>(int viewId, int tabId, String command, Map<String, Object?> args) async {
+  static Future<T?> invokeMethodForTab<T>(int viewId, int tabId, String command,
+      Map<String, Object?> args) async {
     try {
       var channel = openTabViewChannel(viewId);
       debugPrint("Calling $command for view: $viewId tab: $tabId");
@@ -74,7 +76,7 @@ class MethodChannelProxy {
       rethrow;
     }
   }
-  
+
   Future<void> register(int viewId) async {
     try {
       var channel = openViewChannel(viewId);
@@ -109,6 +111,10 @@ class MethodChannelProxy {
     }
   }
 
+  Future<void> dispose(int viewId, int tabId) =>
+      invokeMethodForTab<bool>(viewId, tabId, "dispose", {});
+
+
   Future<int?> getActiveTab(int viewId) async {
     try {
       var channel = openViewChannel(viewId);
@@ -120,7 +126,8 @@ class MethodChannelProxy {
   }
 
   Future<bool> isTabActive(int viewId, int tabId) async {
-    return (await invokeMethodForTab<bool>(viewId, tabId, "isActive", {})) ?? false;
+    return (await invokeMethodForTab<bool>(viewId, tabId, "isActive", {})) ??
+        false;
   }
 
   Future<void> activateTab(int viewId, int tabId) async {
@@ -128,7 +135,8 @@ class MethodChannelProxy {
   }
 
   Future<String?> getCurrentUrl(int viewId, int tabId) async {
-    return await invokeMethodForTab<String?>(viewId, tabId, "getCurrentUrl", {});
+    return await invokeMethodForTab<String?>(
+        viewId, tabId, "getCurrentUrl", {});
   }
 
   Future<String?> getTitle(int viewId, int tabId) async {
@@ -158,7 +166,8 @@ class MethodChannelProxy {
   }
 
   Future<GeckoOffset> getScrollOffset(int viewId, int tabId) async {
-    final result = await invokeMethodForTab<Map<Object?, Object?>>(viewId, tabId, "getScrollOffset", {});
+    final result = await invokeMethodForTab<Map<Object?, Object?>>(
+        viewId, tabId, "getScrollOffset", {});
     return GeckoOffset.fromMap(result!);
   }
 
@@ -170,26 +179,29 @@ class MethodChannelProxy {
     await invokeMethodForTab(viewId, tabId, "scrollToTop", {});
   }
 
-  Future<void> scrollBy(int viewId, int tabId, GeckoOffset offset, bool smooth) async {
+  Future<void> scrollBy(int viewId, int tabId, GeckoOffset offset,
+      bool smooth) async {
     await invokeMethodForTab(viewId, tabId, "scrollBy", {
       "smooth": smooth,
       "offset": offset.toMap()
     });
   }
 
-  Future<void> scrollTo(int viewId, int tabId, GeckoPosition position, bool smooth) async {
+  Future<void> scrollTo(int viewId, int tabId, GeckoPosition position,
+      bool smooth) async {
     await invokeMethodForTab(viewId, tabId, "scrollTo", {
       "smooth": smooth,
       "position": position.toMap()
     });
   }
 
-  Future<GeckoFindResult> findNext(int viewId, int tabId, GeckoFindRequest request) async {
+  Future<GeckoFindResult> findNext(int viewId, int tabId,
+      GeckoFindRequest request) async {
     final result = await invokeMethodForTab<Map<Object?, Object?>>(
-      viewId, tabId,
-      "findNext", {
-        "request": request.toMap()
-      }
+        viewId, tabId,
+        "findNext", {
+      "request": request.toMap()
+    }
     );
     return GeckoFindResult.fromMap(result!);
   }
@@ -216,13 +228,11 @@ class MethodChannelProxy {
     await invokeMethodForPlugin("enableCookieManager", {});
   }
 
-  Future<Cookie> getCookie(
-    String? firstPartyDomain,
-    String name,
-    CookiePartitionKey? partitionKey,
-    String? storeId,
-    String url)
-  async {
+  Future<Cookie> getCookie(String? firstPartyDomain,
+      String name,
+      CookiePartitionKey? partitionKey,
+      String? storeId,
+      String url) async {
     try {
       final result = await invokeMethodForPlugin<Map<Object?, Object?>>(
           "getCookie", {
@@ -239,14 +249,12 @@ class MethodChannelProxy {
     }
   }
 
-  Future<List<Cookie>> getAllCookies(
-    String? domain,
-    String? firstPartyDomain,
-    String? name,
-    CookiePartitionKey? partitionKey,
-    String? storeId,
-    String url)
-  async {
+  Future<List<Cookie>> getAllCookies(String? domain,
+      String? firstPartyDomain,
+      String? name,
+      CookiePartitionKey? partitionKey,
+      String? storeId,
+      String url) async {
     try {
       final result = await invokeMethodForPlugin<List<Object?>>(
           "getAllCookies", {
@@ -266,20 +274,18 @@ class MethodChannelProxy {
     }
   }
 
-  Future<void> setCookie(
-    String? domain,
-    int? expirationDate,
-    String? firstPartyDomain,
-    bool? httpOnly,
-    String? name,
-    CookiePartitionKey? partitionKey,
-    String? path,
-    CookieSameSiteStatus? sameSite,
-    bool? secure,
-    String? storeId,
-    String url,
-    String? value)
-  async {
+  Future<void> setCookie(String? domain,
+      int? expirationDate,
+      String? firstPartyDomain,
+      bool? httpOnly,
+      String? name,
+      CookiePartitionKey? partitionKey,
+      String? path,
+      CookieSameSiteStatus? sameSite,
+      bool? secure,
+      String? storeId,
+      String url,
+      String? value) async {
     try {
       await invokeMethodForPlugin(
           "setCookie", {
@@ -302,13 +308,11 @@ class MethodChannelProxy {
     }
   }
 
-  Future<void> removeCookie(
-    String? firstPartyDomain,
-    String name,
-    CookiePartitionKey? partitionKey,
-    String? storeId,
-    String url)
-  async {
+  Future<void> removeCookie(String? firstPartyDomain,
+      String name,
+      CookiePartitionKey? partitionKey,
+      String? storeId,
+      String url) async {
     try {
       await invokeMethodForPlugin(
           "removeCookie", {

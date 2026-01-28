@@ -28,10 +28,10 @@ import io.flutter.plugin.platform.PlatformView
 
 
 class GeckoViewProxy(
-        context: Context,
-        runtimeManager: GeckoRuntimeController,
-        messenger: BinaryMessenger,
-        id: Int)
+    context: Context,
+    runtimeManager: GeckoRuntimeController,
+    messenger: BinaryMessenger,
+    id: Int)
     : PlatformView, MethodChannel.MethodCallHandler, PromptHandler {
 
 
@@ -135,6 +135,10 @@ class GeckoViewProxy(
                         "runJSAsync" -> {
                             val script = tryExtractSingleArgument<String>(call, "script")
                             instance.runJsAsync(tabId, script)
+                            result.success(true)
+                        }
+                        "dispose" -> {
+                            instance.dispose()
                             result.success(true)
                         }
 
