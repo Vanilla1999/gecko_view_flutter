@@ -29,8 +29,7 @@ class GeckoView extends StatefulWidget {
   State<GeckoView> createState() => _GeckoViewState();
 }
 
-class _GeckoViewState extends State<GeckoView>
-    with WidgetsBindingObserver {
+class _GeckoViewState extends State<GeckoView> with WidgetsBindingObserver {
   final String viewType = 'gecko_view';
   late GeckoViewController controller;
 
@@ -59,8 +58,7 @@ class _GeckoViewState extends State<GeckoView>
       surfaceFactory: (context, controller) {
         return AndroidViewSurface(
           controller: controller as AndroidViewController,
-          gestureRecognizers:
-          const <Factory<OneSequenceGestureRecognizer>>{},
+          gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
           hitTestBehavior: PlatformViewHitTestBehavior.opaque,
         );
       },
@@ -89,9 +87,9 @@ class GeckoJavascriptController {
   final int _tabId;
 
   GeckoJavascriptController._(
-      this._viewId,
-      this._tabId,
-      );
+    this._viewId,
+    this._tabId,
+  );
 
   Future<void> runAsync(String script) async {
     await MethodChannelProxy.instance.runJSAsync(_viewId, _tabId, script);
@@ -103,13 +101,12 @@ class GeckoFindController {
   final int _tabId;
 
   GeckoFindController._(
-      this._viewId,
-      this._tabId,
-      );
+    this._viewId,
+    this._tabId,
+  );
 
   Future<GeckoFindResult> find(GeckoFindRequest request) async {
-    return await MethodChannelProxy.instance
-        .findNext(_viewId, _tabId, request);
+    return await MethodChannelProxy.instance.findNext(_viewId, _tabId, request);
   }
 
   Future<void> clear() async {
@@ -135,47 +132,40 @@ class GeckoTabController {
   final GeckoJsBridge _jsBridge = GeckoJsBridge();
 
   GeckoTabController._(
-      this._viewId,
-      this._tabId,
-      ) {
+    this._viewId,
+    this._tabId,
+  ) {
     _javascriptController = GeckoJavascriptController._(_viewId, _tabId);
     _findController = GeckoFindController._(_viewId, _tabId);
   }
 
   int id() => _tabId;
 
-  GeckoJavascriptController javascriptController() =>
-      _javascriptController;
+  GeckoJavascriptController javascriptController() => _javascriptController;
 
   GeckoFindController findController() => _findController;
 
   Future<bool> isActive() async {
-    return await MethodChannelProxy.instance
-        .isTabActive(_viewId, _tabId);
+    return await MethodChannelProxy.instance.isTabActive(_viewId, _tabId);
   }
 
-  Future<bool> dispose() async {
-    return await MethodChannelProxy.instance
-        .dispose(_viewId, _tabId);
-  }
+  Future<void> dispose() =>
+      MethodChannelProxy.instance.dispose(_viewId, _tabId);
 
   Future<void> activate() async {
     await MethodChannelProxy.instance.activateTab(_viewId, _tabId);
   }
 
   Future<String?> currentUrl() async {
-    return await MethodChannelProxy.instance
-        .getCurrentUrl(_viewId, _tabId);
+    return await MethodChannelProxy.instance.getCurrentUrl(_viewId, _tabId);
   }
 
   Future<String?> getTitle() async {
-    return await MethodChannelProxy.instance
-        .getTitle(_viewId, _tabId);
+    return await MethodChannelProxy.instance.getTitle(_viewId, _tabId);
   }
 
   Future<String?> getUserAgent() async {
-    return await MethodChannelProxy.instance
-        .getUserAgent(_viewId, _tabId);
+    return await MethodChannelProxy.instance.getUserAgent(_viewId, _tabId);
   }
 
   Future<void> openURI(Uri uri) async {
@@ -195,8 +185,7 @@ class GeckoTabController {
   }
 
   Future<GeckoOffset> getScrollOffset() async {
-    return await MethodChannelProxy.instance
-        .getScrollOffset(_viewId, _tabId);
+    return await MethodChannelProxy.instance.getScrollOffset(_viewId, _tabId);
   }
 
   Future<void> scrollToBottom() async {
@@ -208,8 +197,7 @@ class GeckoTabController {
   }
 
   Future<void> scrollBy(GeckoOffset offset, bool smooth) async {
-    await MethodChannelProxy.instance
-        .scrollBy(_viewId, _tabId, offset, smooth);
+    await MethodChannelProxy.instance.scrollBy(_viewId, _tabId, offset, smooth);
   }
 
   Future<void> scrollTo(GeckoPosition position, bool smooth) async {
@@ -246,9 +234,9 @@ class GeckoViewController {
   PromptDelegate promptDelegate = FlutterPromptDelegate();
 
   GeckoViewController._(
-      this._context,
-      this._id,
-      ) {
+    this._context,
+    this._id,
+  ) {
     init();
     _promptHandler = initPromptHandler();
     _initViewChannel();
@@ -259,8 +247,7 @@ class GeckoViewController {
   }
 
   PromptHandler initPromptHandler() {
-    final handler =
-    MethodChannelProxy.instance.registerPromptHandler(_id);
+    final handler = MethodChannelProxy.instance.registerPromptHandler(_id);
     handler.onChoicePrompt = onChoicePrompt;
     handler.onAlertPrompt = onAlertPrompt;
     return handler;
@@ -277,8 +264,7 @@ class GeckoViewController {
             final List<dynamic> args =
                 (call.arguments['args'] as List?) ?? const [];
             // Пока jsCallHandler без tabId — берём первый активный таб
-            final tab =
-            _tabs.isNotEmpty ? _tabs.first : null;
+            final tab = _tabs.isNotEmpty ? _tabs.first : null;
             if (tab == null) return null;
             return await tab.handleJsCall(name, args);
           }
@@ -298,8 +284,7 @@ class GeckoViewController {
         case 'onLoadStop':
           {
             final int tabId = call.arguments['tabId'] as int;
-            final bool success =
-            call.arguments['success'] as bool;
+            final bool success = call.arguments['success'] as bool;
             final tab = _tabs
                 .where((t) => t.id() == tabId)
                 .cast<GeckoTabController?>()
@@ -311,11 +296,9 @@ class GeckoViewController {
         case 'onReceivedError':
           {
             final int tabId = call.arguments['tabId'] as int;
-            final String? url =
-            call.arguments['url'] as String?;
+            final String? url = call.arguments['url'] as String?;
             final int code = call.arguments['code'] as int;
-            final String? message =
-            call.arguments['message'] as String?;
+            final String? message = call.arguments['message'] as String?;
             final tab = _tabs
                 .where((t) => t.id() == tabId)
                 .cast<GeckoTabController?>()
@@ -327,8 +310,7 @@ class GeckoViewController {
         case 'onProgressChanged':
           {
             final int tabId = call.arguments['tabId'] as int;
-            final int progress =
-            call.arguments['progress'] as int;
+            final int progress = call.arguments['progress'] as int;
             final tab = _tabs
                 .where((t) => t.id() == tabId)
                 .cast<GeckoTabController?>()
@@ -340,8 +322,7 @@ class GeckoViewController {
         case 'shouldOverrideUrlLoading':
           {
             final int tabId = call.arguments['tabId'] as int;
-            final String url =
-            call.arguments['url'] as String;
+            final String url = call.arguments['url'] as String;
             final tab = _tabs
                 .where((t) => t.id() == tabId)
                 .cast<GeckoTabController?>()
@@ -371,24 +352,19 @@ class GeckoViewController {
   }
 
   Future<GeckoTabController?> getActiveTab() async {
-    final activeId =
-    await MethodChannelProxy.instance.getActiveTab(_id);
+    final activeId = await MethodChannelProxy.instance.getActiveTab(_id);
     if (activeId != null) {
-      return _tabs
-          .firstWhere((tab) => tab.id() == activeId);
+      return _tabs.firstWhere((tab) => tab.id() == activeId);
     }
     return null;
   }
 
   Future<ChoicePromptResponse> onChoicePrompt(
       ChoicePromptRequest request) async {
-    return await promptDelegate.onChoicePrompt(
-        _context, request);
+    return await promptDelegate.onChoicePrompt(_context, request);
   }
 
-  Future<void> onAlertPrompt(
-      AlertPromptRequest request) async {
-    return await promptDelegate.onAlertPrompt(
-        _context, request);
+  Future<void> onAlertPrompt(AlertPromptRequest request) async {
+    return await promptDelegate.onAlertPrompt(_context, request);
   }
 }
