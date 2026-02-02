@@ -154,6 +154,11 @@ class GeckoTabController {
         .isTabActive(_viewId, _tabId);
   }
 
+  Future<bool> dispose() async {
+    return await MethodChannelProxy.instance
+        .dispose(_viewId, _tabId);
+  }
+
   Future<void> activate() async {
     await MethodChannelProxy.instance.activateTab(_viewId, _tabId);
   }
